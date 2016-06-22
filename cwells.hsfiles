@@ -1,0 +1,178 @@
+{-# START_FILE {{name}}.cabal #-}
+name:                {{name}}
+version:             0.1.0
+synopsis:            Initial project template from stack, using hspec and quickcheck
+description:         Please see README.md
+homepage:            https://github.com/{{github-username}}{{^github-username}}githubuser{{/github-username}}/{{name}}
+license:             MIT
+license-file:        LICENSE
+author:              {{author-name}}{{^author-name}}Author name here{{/author-name}}
+maintainer:          {{author-email}}{{^author-email}}example@example.com{{/author-email}}
+copyright:           {{copyright}}{{^copyright}}{{year}}{{^year}}2016{{/year}} {{author-name}}{{^author-name}}Author name here{{/author-name}}{{/copyright}}
+category:            {{category}}{{^category}}Web{{/category}}
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Data.String.Strip
+  build-depends:       base >= 4.7 && < 5
+  default-language:    Haskell2010
+
+executable {{name}}
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , {{name}}
+  default-language:    Haskell2010
+
+test-suite unit-tests
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , {{name}}
+                     , hspec
+                     , QuickCheck
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/{{github-username}}{{^github-username}}githubuser{{/github-username}}/{{name}}
+
+{-# START_FILE Setup.hs #-}
+import Distribution.Simple
+main = defaultMain
+
+{-# START_FILE test/Spec.hs #-}
+{-# OPTIONS_GHC -F -pgmF hspec-discover #-}
+
+{-# START_FILE test/Data/String/StripSpec.hs #-}
+module Data.String.StripSpec (main, spec) where
+
+import Test.Hspec
+import Test.QuickCheck
+
+import Data.String.Strip
+
+-- `main` is here so that this module can be run from GHCi on its own.  It is
+-- not needed for automatic spec discovery.
+main :: IO ()
+main = hspec spec
+
+spec :: Spec
+spec = do
+  describe "strip" $ do
+    it "removes leading and trailing whitespace" $ do
+      strip "\t  foo bar\n" `shouldBe` "foo bar"
+    it "is idempotent" $ property $
+      \str -> strip str == strip (strip str)
+
+{-# START_FILE src/Data/String/Strip.hs #-}
+module Data.String.Strip (strip)  where
+
+import Data.Char
+
+strip :: String -> String
+strip = dropWhile isSpace . reverse . dropWhile isSpace . reverse
+
+{-# START_FILE app/Main.hs #-}
+module Main where
+
+import Data.String.Strip
+
+main :: IO ()
+main = interact strip
+
+{-# START_FILE LICENSE #-}
+The MIT License (MIT)
+
+Copyright (c) {{year}}{{^year}}2016{{/year}} {{author-name}}{{^author-name}}Author name here{{/author-name}}
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+{-# START_FILE .gitignore #-}
+## Haskell ###
+dist
+dist-*
+cabal-dev
+*.o
+*.hi
+*.chi
+*.chs.h
+*.dyn_o
+*.dyn_hi
+.hpc
+.hsenv
+.cabal-sandbox/
+cabal.sandbox.config
+*.prof
+*.aux
+*.hp
+*.eventlog
+.stack-work/
+cabal.project.local
+
+{-# START_FILE .travis.yml #-}
+language: haskell
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.stack
+    - $HOME/.cabal
+
+ghc:
+  - 7.8
+
+before_install:
+  # Download and unpack the stack executable
+  - mkdir -p ~/.local/bin
+  - export PATH=$HOME/.local/bin:$PATH
+  - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
+
+  # Setup Stack and install dependencies for tools
+  - stack setup --no-terminal
+  - cabal install doctest
+  - stack install stack-hpc-coveralls --no-terminal
+
+install:
+  # Install the program's dependencies with Stack
+  - stack install --only-dependencies --no-terminal
+
+  # Install the dependencies with Cabal to allow doctest to work
+  - cabal install --only-dependencies
+
+script:
+  # Build and test the program
+  - stack build --no-terminal --coverage
+  - stack test --no-terminal --coverage
+  - doctest $(find src -name "*.hs")
+
+  # Generate the documentation and check the package validity
+  - stack haddock --no-terminal
+  - cabal check
+
+after_script:
+  # Send a test coverage report to Coveralls.io
+  - shc {{name}} unit-tests
