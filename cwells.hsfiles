@@ -176,3 +176,9 @@ script:
 after_script:
   # Send a test coverage report to Coveralls.io
   - shc {{name}} unit-tests
+
+{-# START_FILE README.md #-}
+# {{name}} [![Travis CI Status](https://api.travis-ci.org/{{github-username}}{{^github-username}}githubuser{{/github-username}}/{{name}}.svg)](https://travis-ci.org/{{github-username}}{{^github-username}}githubuser{{/github-username}}/{{name}}) [![Coverage Status](https://coveralls.io/repos/github/{{github-username}}{{^github-username}}githubuser{{/github-username}}/{{name}}/badge.svg?branch=master)](https://coveralls.io/github/{{github-username}}{{^github-username}}githubuser{{/github-username}}/{{name}}?branch=master)
+
+## License
+The source code of {{name}} is available under the [MIT license](https://opensource.org/licenses/MIT), see `LICENSE` for more information.
