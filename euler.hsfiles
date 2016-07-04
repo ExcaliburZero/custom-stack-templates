@@ -35,16 +35,19 @@ main = defaultMain
 {-# START_FILE src/Euler/{{name}}.hs #-}
 module Euler.{{name}} where
 
-helloWorld :: String
-helloWorld = "Hello, World!"
+helloWorld :: String -> String
+helloWorld name = "Hello, " ++ name ++ "!"
 
-{-# START_FILE app/{{name}}.hs #-}
+{-# START_FILE app/Main.hs #-}
 module Main where
 
 import Euler.{{name}}
 
 main :: IO ()
-main = putStrLn helloWorld
+main = do
+  let input = "World"
+  let result = helloWorld input
+  print result
 
 {-# START_FILE LICENSE #-}
 The MIT License (MIT)
@@ -68,26 +71,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-{-# START_FILE .gitignore #-}
-## Haskell ###
-dist
-dist-*
-cabal-dev
-*.o
-*.hi
-*.chi
-*.chs.h
-*.dyn_o
-*.dyn_hi
-.hpc
-.hsenv
-.cabal-sandbox/
-cabal.sandbox.config
-*.prof
-*.aux
-*.hp
-*.eventlog
-.stack-work/
-cabal.project.local
 
